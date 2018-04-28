@@ -6,6 +6,7 @@ public class Main {
         a.load();
         a.generateBaseSolution();
         //a.Taboo();
-        a.descente();
+        //a.localMin();
+        a.taboo();
     }
 }

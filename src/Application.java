@@ -4,6 +4,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
+@SuppressWarnings("Duplicates")
+
 public class Application {
 
     private ArrayList<Client> clients = new ArrayList<>();
@@ -74,8 +76,8 @@ public class Application {
         lastSolution = bestSolution;
         baseSolution = bestSolution;
         solutionsAlreadyExplored.put(lastSolution.serialize(), new Solution(lastSolution));
-        //System.out.println(bestSolution.getSommeDistance(root, distances));
-        //System.out.println("FINI !");
+        System.out.println("Base solution :");
+        baseSolution.display(root, distances);
     }
 
     public Client getVoisinageLess(Client root, Client origin, ArrayList<Client> ar, Route r) {
@@ -90,7 +92,7 @@ public class Application {
         }
         return good;
     }
-
+/*
     public void Taboo() {
         Random r = new Random();
         System.out.println("DEBUT TABOO");
@@ -218,6 +220,91 @@ public class Application {
             }
         }
         LocalBest.display(root, distances);
+    }
+    */
+
+    public void localMin(){
+        Solution lastRoundBestSolution;
+        Solution currentBestSolution = baseSolution;
+        int i = 0;
+        do{
+            lastRoundBestSolution = currentBestSolution;
+            ArrayList<Solution> allNeighbors = generateAllNeighbors(currentBestSolution);
+            for(Solution s: allNeighbors){
+                if(s.getSommeDistance(root, distances) < currentBestSolution.getSommeDistance(root, distances))
+                    currentBestSolution = s;
+            }
+            i++;
+        }while(lastRoundBestSolution != currentBestSolution);
+        System.out.println("Minimum local atteint aprés " + i + " essais");
+        currentBestSolution.display(root, distances);
+    }
+
+    public void taboo(){
+        HashMap<String, Solution> taboo = new HashMap<>();
+        Solution globalBestSolution = baseSolution;
+        Solution currentBestSolution = baseSolution;
+        Solution lastRoundBestSolution;
+        int i = 0;
+        do {
+            lastRoundBestSolution = currentBestSolution;
+            ArrayList<Solution> allNeighbors = generateAllNeighbors(currentBestSolution);
+            for (Solution s : allNeighbors) {
+                if (s.getSommeDistance(root, distances) < currentBestSolution.getSommeDistance(root, distances) && taboo.get(s.serialize()) != null)
+                    currentBestSolution = s;
+            }
+            if(lastRoundBestSolution == currentBestSolution){
+                if(currentBestSolution.getSommeDistance(root, distances) < globalBestSolution.getSommeDistance(root, distances))
+                    globalBestSolution = currentBestSolution;
+                taboo.put(currentBestSolution.serialize(), currentBestSolution);
+                System.out.println(taboo.size());
+                currentBestSolution = null;
+                for (Solution s : allNeighbors) {
+                    if(taboo.get(s.serialize()) != null){
+                        if (currentBestSolution == null)
+                            currentBestSolution = s;
+                        else if (s.getSommeDistance(root, distances) < currentBestSolution.getSommeDistance(root, distances))
+                            currentBestSolution = s;
+                    }
+                }
+            }
+            i++;
+        } while (taboo.size() < 10);
+        for(Map.Entry<String, Solution> entry : taboo.entrySet()){
+            entry.getValue().display(root,distances);
+        }
+        System.out.println("Minimum local atteint aprés " + i + " essais");
+        globalBestSolution.display(root, distances);
+    }
+
+    public ArrayList<Solution> generateAllNeighbors(Solution s){
+        ArrayList<Solution> result = new ArrayList<>();
+        ArrayList<Route> routes = s.getRoutes();
+        for(int ir = 0; ir < routes.size(); ir++){
+            Route route1 = routes.get(ir);
+            for(int jr = ir+1; jr < routes.size(); jr++){
+                Route route2 = routes.get(jr);
+                for(int ic = 1; ic < route1.getRoute().size()-1; ic++) {
+                    Client c1 = route1.getRoute().get(ic);
+                    for (int jc = 1; jc < route2.getRoute().size()-1; jc++) {
+                        Client c2 = route2.getRoute().get(jc);
+                        route1.remove(c1);
+                        route2.remove(c2);
+                        if (route1.isChargeOk(c2) && route2.isChargeOk(c1)) {
+                            Solution news = new Solution(baseSolution);
+                            news.getRoutes().get(ir).add(ic,c2);
+                            news.getRoutes().get(jr).add(jc,c1);
+                            result.add(news);
+                        }
+                        if (!route1.add(ic, c1))
+                            System.out.println("BUG avec les index sur r1");
+                        if (!route2.add(jc, c2))
+                            System.out.println("Bug avec les index sur r2");
+                    }
+                }
+            }
+        }
+        return result;
     }
 
 }
