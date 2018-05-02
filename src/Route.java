@@ -46,9 +46,9 @@ public class Route{
     }
 
     public double getDistance(Client root, Double[][] distances) {
-        double d = 0;
+        double d = 0.d;
         d+= distances[root.getI()][route.get(0).getI()];
-        for (int i = 0; i < route.size() - 2; i++) {
+        for (int i = 0; i < route.size() - 1; i++) {
             d+= distances[route.get(i).getI()][route.get(i+1).getI()];
         }
         d+= distances[route.get(route.size()-1).getI()][root.getI()];
