@@ -89,71 +89,6 @@ public class Application {
         return good;
     }
 /*
-    public void Taboo() {
-        Random r = new Random();
-        System.out.println("DEBUT TABOO");
-        int nbEnd = 0;
-        Integer i = 10;
-        while (nbEnd < 50) {
-            lastSolution = new Solution(lastSolution);
-            Route r1;
-            if (i == 0)
-                r1 = lastSolution.getRoutes().get(r.nextInt(lastSolution.getRoutes().size() - 1));
-            else
-                r1 = lastSolution.getLightestRoute();
-            Route r2 = r1;
-            Integer r2i = 0;
-            while (r2 == r1) {
-                r2i = r.nextInt(lastSolution.getRoutes().size() - 1);
-                r2 = lastSolution.getRoutes().get(r2i);
-            }
-            Client c1;
-            Client c2;
-            boolean done = false;
-            i = 10;
-            do {
-                //System.out.println(i);
-                //System.out.println("new Generation");
-                int r1Size = r1.getRoute().size();
-                Integer c1i = r1Size == 3 ? 1 : r.nextInt(r1Size - 2 - 1) + 1;
-                c1 = r1.getRoute().get(c1i);
-                int r2Size = r2.getRoute().size();
-                Integer c2i = r2Size == 3 ? 1 : r.nextInt(r2Size - 2 - 1) + 1;
-                c2 = r2.getRoute().get(c2i);
-                //System.out.println(c1i + " " + c2i);
-                r1.remove(c1);
-                r2.remove(c2);
-                if (r1.isChargeOk(c2) && r2.isChargeOk(c1)) {
-                    done = true;
-                    r1.add(c1i, c2);
-                    r2.add(c2i, c1);
-                } else {
-                    if (!r1.add(c1i, c1))
-                        System.out.println("BUG avec les index sur r1");
-                    if (!r2.add(c2i, c2))
-                        System.out.println("Bug avec les" +
-                                " index sur r2");
-                }
-                i--;
-            } while (!done && i > 0);
-            if (solutionsAlreadyExplored.get(lastSolution.serialize()) != null && i > 0) {
-                nbEnd++;
-            } else {
-                nbEnd = 0;
-                if (lastSolution.isBetterThan(bestSolution, root, distances))
-                    bestSolution = lastSolution;
-                solutionsAlreadyExplored.put(lastSolution.serialize(), lastSolution);
-                if (lastSolution.getIndex() % 20000 == 0)
-                    lastSolution.display(root, distances);
-            }
-        }
-        System.out.println("BASE SOLUTION:");
-        baseSolution.display(root, distances);
-        System.out.println("BEST SOLUTION:");
-        bestSolution.display(root, distances);
-    }
-
-
     public void descente() {
         Solution LocalBest;
         Random r = new Random();
@@ -217,8 +152,7 @@ public class Application {
         }
         LocalBest.display(root, distances);
     }
-    */
-
+*/
     public void localMin(){
         Solution lastRoundBestSolution;
         Solution currentBestSolution = baseSolution;
@@ -240,15 +174,14 @@ public class Application {
         //HashMap<String, Solution> taboo = new HashMap<>();
         ArrayList<String> taboo = new ArrayList<>();
         Solution globalBestSolution = baseSolution;
-        Solution currentBestSolution = baseSolution;
-        Solution bestCandidat;
+        Solution bestCandidat = baseSolution;
         Random r = new Random();
         int i = 0;
-        while(taboo.size() < 500) {
-            taboo.add(currentBestSolution.serialize());
-            ArrayList<Solution> allNeighbors = generateAllNeighborsByMove(currentBestSolution);
+        while(taboo.size() < 1000 && bestCandidat != null ) {
+            taboo.add(bestCandidat.serialize());
+            ArrayList<Solution> allNeighbors = generateAllNeighborsByMove(bestCandidat);
             /////////
-            ArrayList<Solution> bonus = generateAllNeighborsBySwap(currentBestSolution);
+            ArrayList<Solution> bonus = generateAllNeighborsBySwap(bestCandidat);
             for(Solution s: bonus){
                 allNeighbors.add(s);
             }
@@ -263,7 +196,6 @@ public class Application {
                 }
                 else if (!taboo.contains(s.serialize()) && (Double.compare(s.getSommeDistance(root, distances), bestCandidat.getSommeDistance(root, distances)) < 0 )){ // peu pas reselect best
                     bestCandidat = s;
-                //    System.out.println(s.serialize());
                 }
                 if(taboo.contains(s.serialize()))
                     stopper++;
@@ -277,34 +209,12 @@ public class Application {
                 System.out.println("EXCEPTION INCOMING ! stopper : " + stopper + " taboo list : " + taboo.size() + " neighbors :" + allNeighbors.size());
                 System.out.println("place break here");
             }
-            //bestCandidat.display(root, distances);
-
-            /*System.out.println("candidat    " + bestCandidat.serialize());
-            bestCandidat.display(root, distances);
-            System.out.println("current best" + currentBestSolution.serialize());
-            currentBestSolution.display(root, distances);
-            System.out.println(taboo.contains(bestCandidat.serialize()));*/
-
-            currentBestSolution = bestCandidat;
-            if(currentBestSolution.getSommeDistance(root, distances) < globalBestSolution.getSommeDistance(root, distances)){
-                globalBestSolution = currentBestSolution;
-            }
-
-            /*if(lastRoundBestSolution == currentBestSolution){
-                if(currentBestSolution.getSommeDistance(root, distances) < globalBestSolution.getSommeDistance(root, distances))
-                    globalBestSolution = currentBestSolution;
-                taboo.put(currentBestSolution.serialize(), currentBestSolution);
-                System.out.println(taboo.size());
-                currentBestSolution = null;
-                for (Solution s : allNeighbors) {
-                    if(taboo.get(s.serialize()) != null){
-                        if (currentBestSolution == null)
-                            currentBestSolution = s;
-                        else if (s.getSommeDistance(root, distances) < currentBestSolution.getSommeDistance(root, distances))
-                            currentBestSolution = s;
-                    }
+            else {
+                if (bestCandidat.getSommeDistance(root, distances) < globalBestSolution.getSommeDistance(root, distances)) {
+                    globalBestSolution = bestCandidat;
+                    //globalBestSolution.display(root, distances);
                 }
-            }*/
+            }
 
             i++;
             //currentBestSolution.display(root, distances);
@@ -327,7 +237,7 @@ public class Application {
                         route1.remove(c1);
                         route2.remove(c2);
                         if (route1.isChargeOk(c2) && route2.isChargeOk(c1)) {
-                            Solution news = new Solution(baseSolution);
+                            Solution news = Solution.clone(s);
                             news.getRoutes().get(ir).addAtInteger(ic,c2);
                             news.getRoutes().get(jr).addAtInteger(jc,c1);
                             result.add(news);
@@ -346,25 +256,18 @@ public class Application {
     public ArrayList<Solution> generateAllNeighborsByMove(Solution s){
         ArrayList<Solution> result = new ArrayList<>();
         ArrayList<Route> routes = s.getRoutes();
-        Random r = new Random();
         for(int ir = 0; ir < routes.size(); ir++) {
             Route route1 = routes.get(ir);
             for (int ic = 1; ic < route1.getRoute().size() - 1; ic++) {
                 Client c1 = route1.getRoute().get(ic);
-                for (int jr = ir + 1; jr < routes.size(); jr++) {
+                for (int jr = 0; jr < routes.size(); jr++) {
                     Route route2 = routes.get(jr);
                     if (route2.isChargeOk(c1)) {
                         for (int jc = 1; jc < route2.getRoute().size() - 1; jc++) {
-                            Solution news = new Solution(baseSolution);
+                            Solution news = Solution.clone(s);
                             news.getRoutes().get(ir).remove(c1);
-                            if(news.getRoutes().get(jr).addAtInteger(jc, c1) == false) {
-                                System.out.println(news.getRoutes().get(jr).getCharge());
-                                System.out.println(route2.getCharge());
-                                System.out.println(c1.getQ());
-                            }
+                            news.getRoutes().get(jr).addAtInteger(jc, c1);
                             result.add(news);
-                            if(news.globalWeight() != 410)
-                                System.out.println("SOUCIS " + news.getIndex());
                         }
                     }
                 }

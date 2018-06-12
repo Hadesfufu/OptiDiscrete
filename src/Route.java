@@ -10,10 +10,15 @@ public class Route{
 
     }
 
-    public Route(Route r){
-        route = (ArrayList<Client>) r.route.clone();
-        charge = getCharge();
+    public static Route clone(Route r){
+        Route returner = new Route();
+        for(Client c : r.getRoute()){
+            returner.add(c);
+        }
+        returner.getCharge();
+        return returner;
     }
+
 
     public boolean add(Client c) {
         if (charge + c.getQ() > maxCharge)
@@ -37,8 +42,7 @@ public class Route{
     }
 
     public boolean isChargeOk(Client c) {
-        //System.out.println(charge + c.getQ());
-        return (charge + c.getQ() <= 100);
+        return ((charge + c.getQ()) <= 100);
     }
 
     public boolean isChargeOk() {
@@ -68,6 +72,7 @@ public class Route{
         for(Client c: route){
             i += c.getQ();
         }
+        charge = i;
         return i;
     }
 

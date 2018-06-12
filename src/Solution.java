@@ -12,16 +12,21 @@ public class Solution {
         this.routes = routes;
     }
 
+    public Solution(){
+        index = s_index;
+        s_index++;
+    }
+
     public Integer getIndex() {
         return index;
     }
 
-    public Solution(Solution s){
-        index = s_index;
-        s_index++;
-        for(Route r: s.routes){
-            routes.add(new Route(r));
+    public static Solution clone(Solution s){
+        Solution returner = new Solution();
+        for(Route r : s.getRoutes()){
+            returner.addRoute(Route.clone(r));
         }
+        return returner;
     }
 
     public ArrayList<Route> getRoutes() {
@@ -77,6 +82,10 @@ public class Solution {
             i+=r.getCharge();
         }
         return i;
+    }
+
+    public void addRoute(Route r){
+        routes.add(r);
     }
 
     public static Solution generateRandom(Application appli){
