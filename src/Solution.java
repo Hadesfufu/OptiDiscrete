@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Random;
 
 public class Solution {
     private ArrayList<Route> routes = new ArrayList<>();
@@ -69,4 +70,33 @@ public class Solution {
         }
         return s;
     }
+
+    public Integer globalWeight(){
+        Integer i = 0;
+        for(Route r : routes){
+            i+=r.getCharge();
+        }
+        return i;
+    }
+
+    public static Solution generateRandom(Application appli){
+        ArrayList<Client> myclients = (ArrayList<Client>) appli.clients.clone();
+
+        Random rand = new Random();
+        int nbMinRoute = appli.poidTotal / 100 + appli.poidTotal%100 != 0 ? 1 : 0;
+        int nbRoutes = rand.nextInt(appli.clients.size()-nbMinRoute) + nbMinRoute;
+        ArrayList<Route> routes = new ArrayList<>();
+        for(int i = 0; i < nbRoutes; i++){
+            routes.add(new Route());
+        }
+        while(!myclients.isEmpty()){
+            int indexClient = rand.nextInt(myclients.size());
+            int indexRoute = rand.nextInt(routes.size());
+            routes.get(indexRoute).add(myclients.get(indexClient));
+            myclients.remove(indexClient);
+        }
+        Solution returner = new Solution(routes);
+        return returner;
+    }
 }
+

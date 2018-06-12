@@ -2,17 +2,17 @@ import java.util.ArrayList;
 
 public class Route{
 
-    private static Integer maxCharge = 100;
-    private Integer charge = 0;
+    private static int maxCharge = 100;
     private ArrayList<Client> route = new ArrayList<>();
+    private int charge;
 
     public Route() {
 
     }
 
     public Route(Route r){
-        charge = new Integer(r.charge);
         route = (ArrayList<Client>) r.route.clone();
+        charge = getCharge();
     }
 
     public boolean add(Client c) {
@@ -23,7 +23,7 @@ public class Route{
         return true;
     }
 
-    public boolean add(Integer index, Client c){
+    public boolean addAtInteger(Integer index, Client c){
         if (charge + c.getQ() > maxCharge)
             return false;
         charge += c.getQ();
@@ -64,15 +64,15 @@ public class Route{
     }
 
     public Integer getCharge() {
-        return charge;
+        int i = 0;
+        for(Client c: route){
+            i += c.getQ();
+        }
+        return i;
     }
 
     public Client getLast() {
         return route.get(route.size() - 1);
-    }
-
-    public void setCharge(Integer charge) {
-        this.charge = charge;
     }
 
     public ArrayList<Client> getRoute() {
@@ -86,8 +86,9 @@ public class Route{
     public String serialize(){
         String s = "R";
         for(Client c: route){
-            s += c.getI();
+            s += "C"+c.getI();
         }
         return s;
     }
+
 }

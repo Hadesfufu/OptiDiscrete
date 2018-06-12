@@ -8,11 +8,12 @@ import java.util.*;
 
 public class Application {
 
-    private ArrayList<Client> clients = new ArrayList<>();
-    private ArrayList<Route> routes = new ArrayList<>();
-    private Solution baseSolution;
-    private Double distances[][];
-    private Client root;
+    public ArrayList<Client> clients = new ArrayList<>();
+    public ArrayList<Route> routes = new ArrayList<>();
+    public Solution baseSolution;
+    public Double distances[][];
+    public int poidTotal = 0;
+    public Client root;
 
     public Application() {
 
@@ -37,6 +38,7 @@ public class Application {
                 for (Client d : clients) {
                     distances[c.getI()][d.getI()] = c.distance(d);
                 }
+                poidTotal+=c.getQ();
             }
 
             br.close();
@@ -245,6 +247,12 @@ public class Application {
         while(taboo.size() < 500) {
             taboo.add(currentBestSolution.serialize());
             ArrayList<Solution> allNeighbors = generateAllNeighborsByMove(currentBestSolution);
+            /////////
+            ArrayList<Solution> bonus = generateAllNeighborsBySwap(currentBestSolution);
+            for(Solution s: bonus){
+                allNeighbors.add(s);
+            }
+            /////////
             bestCandidat = null;
             int stopper = 0;
             for (Solution s : allNeighbors) {
@@ -260,15 +268,12 @@ public class Application {
                 if(taboo.contains(s.serialize()))
                     stopper++;
             }
-            if(stopper == allNeighbors.size()) {
-                bestCandidat = allNeighbors.get(r.nextInt(allNeighbors.size()));
-                System.out.println("new RANDOM");
-            }
             if(stopper == taboo.size() && stopper == allNeighbors.size()) {
                 System.out.println("ALL SOLUTIONS EXPLORED ! stopper : " + stopper + " taboo list : " + taboo.size() + " neighbors :" + allNeighbors.size());
                 break;
             }
             if(bestCandidat == null){
+                globalBestSolution.display(root, distances);
                 System.out.println("EXCEPTION INCOMING ! stopper : " + stopper + " taboo list : " + taboo.size() + " neighbors :" + allNeighbors.size());
                 System.out.println("place break here");
             }
@@ -323,13 +328,13 @@ public class Application {
                         route2.remove(c2);
                         if (route1.isChargeOk(c2) && route2.isChargeOk(c1)) {
                             Solution news = new Solution(baseSolution);
-                            news.getRoutes().get(ir).add(ic,c2);
-                            news.getRoutes().get(jr).add(jc,c1);
+                            news.getRoutes().get(ir).addAtInteger(ic,c2);
+                            news.getRoutes().get(jr).addAtInteger(jc,c1);
                             result.add(news);
                         }
-                        if (!route1.add(ic, c1))
+                        if (!route1.addAtInteger(ic, c1))
                             System.out.println("BUG avec les index sur r1");
-                        if (!route2.add(jc, c2))
+                        if (!route2.addAtInteger(jc, c2))
                             System.out.println("Bug avec les index sur r2");
                     }
                 }
@@ -342,23 +347,48 @@ public class Application {
         ArrayList<Solution> result = new ArrayList<>();
         ArrayList<Route> routes = s.getRoutes();
         Random r = new Random();
-        for(int ir = 0; ir < routes.size(); ir++){
+        for(int ir = 0; ir < routes.size(); ir++) {
             Route route1 = routes.get(ir);
-            for(int ic = 1; ic < route1.getRoute().size()-1; ic++) {
+            for (int ic = 1; ic < route1.getRoute().size() - 1; ic++) {
                 Client c1 = route1.getRoute().get(ic);
-                for(int jr = ir+1; jr < routes.size(); jr++){
+                for (int jr = ir + 1; jr < routes.size(); jr++) {
                     Route route2 = routes.get(jr);
-                    if(route2.isChargeOk(c1)) {
+                    if (route2.isChargeOk(c1)) {
                         for (int jc = 1; jc < route2.getRoute().size() - 1; jc++) {
                             Solution news = new Solution(baseSolution);
                             news.getRoutes().get(ir).remove(c1);
-                            news.getRoutes().get(jr).add(jc, c1);
+                            if(news.getRoutes().get(jr).addAtInteger(jc, c1) == false) {
+                                System.out.println(news.getRoutes().get(jr).getCharge());
+                                System.out.println(route2.getCharge());
+                                System.out.println(c1.getQ());
+                            }
                             result.add(news);
+                            if(news.globalWeight() != 410)
+                                System.out.println("SOUCIS " + news.getIndex());
                         }
                     }
                 }
             }
         }
         return result;
+    }
+
+    public void algoGenetique(int population){
+        //generation aletaoire de base
+        ArrayList<Solution> baseGeneration = new ArrayList<>();
+        ArrayList<Solution> newGeneration = new ArrayList<>();
+        ArrayList<Double>   proba = new ArrayList<>();
+
+        double sommefitness = 0.d;
+        for(int i = 0; i < population; i++){
+            baseGeneration.add(Solution.generateRandom(this));
+            sommefitness+=baseGeneration.get(i).getSommeDistance(root, distances);
+        }
+        for(int i = 0; i < population; i++){
+            proba.add(baseGeneration.get(i).getSommeDistance(root, distances)/sommefitness);
+        }
+
+        //faire la proba (n-fitness / sumfitness)
+        //generer une nouvelle generation
     }
 }
