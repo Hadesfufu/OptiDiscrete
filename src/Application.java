@@ -1,5 +1,3 @@
-import sun.awt.image.MultiResolutionToolkitImage;
-
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -51,7 +49,7 @@ public class Application {
         }
     }
 
-    public void generateBaseSolution() {
+    /*public void generateBaseSolution() {
         ArrayList<Client> nonadded = clients;
         nonadded.remove(root);
         Route currentRoute;
@@ -73,6 +71,25 @@ public class Application {
             //System.out.println("FINI ROUTE!");
             currentRoute.add(root);
         }
+        baseSolution = new Solution(routes);
+        System.out.println("Base solution :");
+        baseSolution.display(root, distances);
+    }*/
+
+    public void generateBaseSolution() {
+        ArrayList<Client> nonadded = clients;
+        nonadded.remove(root);
+        Route currentRoute;
+        currentRoute = new Route();
+        routes.add(currentRoute);
+        currentRoute.add(root);
+
+        for (Client c : clients) {
+            currentRoute = new Route();
+            routes.add(currentRoute);
+            currentRoute.add(c);
+        }
+
         baseSolution = new Solution(routes);
         System.out.println("Base solution :");
         baseSolution.display(root, distances);
@@ -268,6 +285,9 @@ public class Application {
                         for (int jc = 1; jc < route2.getRoute().size() - 1; jc++) {
                             Solution news = Solution.clone(s);
                             news.getRoutes().get(ir).remove(c1);
+                            if(news.getRoutes().get(ir).isEmpty()){
+                                news.getRoutes().remove(ir);
+                            }
                             news.getRoutes().get(jr).addAtInteger(jc, c1);
                             result.add(news);
                         }
