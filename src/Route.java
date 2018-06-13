@@ -45,6 +45,10 @@ public class Route{
         return ((charge + c.getQ()) <= 100);
     }
 
+    public boolean isEmpty(){
+        return route.isEmpty();
+    }
+
     public boolean isChargeOk() {
         return (charge <= 100);
     }

@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Random;
 
 public class Solution {
@@ -103,6 +104,12 @@ public class Solution {
             int indexRoute = rand.nextInt(routes.size());
             routes.get(indexRoute).add(myclients.get(indexClient));
             myclients.remove(indexClient);
+        }
+        Iterator<Route> i = routes.iterator();
+        while(i.hasNext()){
+            Route r = i.next();
+            if(r.isEmpty())
+                i.remove();
         }
         Solution returner = new Solution(routes);
         return returner;

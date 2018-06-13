@@ -1,3 +1,5 @@
+import sun.awt.image.MultiResolutionToolkitImage;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -280,18 +282,125 @@ public class Application {
         //generation aletaoire de base
         ArrayList<Solution> baseGeneration = new ArrayList<>();
         ArrayList<Solution> newGeneration = new ArrayList<>();
-        ArrayList<Double>   proba = new ArrayList<>();
+        HashMap<Solution, Double>   proba = new HashMap<>();
+        Random random = new Random();
+        double sommefitness;
+        Solution bestSolution = null;
+        for (int nbIteration = 0; nbIteration < 50; nbIteration++) {
 
-        double sommefitness = 0.d;
-        for(int i = 0; i < population; i++){
-            baseGeneration.add(Solution.generateRandom(this));
-            sommefitness+=baseGeneration.get(i).getSommeDistance(root, distances);
-        }
-        for(int i = 0; i < population; i++){
-            proba.add(baseGeneration.get(i).getSommeDistance(root, distances)/sommefitness);
-        }
+            sommefitness = 0.d;
+            for (int i = 0; i < population; i++) {
+                baseGeneration.add(Solution.generateRandom(this));
+                sommefitness += 1/baseGeneration.get(i).getSommeDistance(root, distances);
+            }
+            for (int i = 0; i < population; i++) {
+                proba.put(baseGeneration.get(i), baseGeneration.get(i).getSommeDistance(root, distances) / sommefitness);
+            }
 
-        //faire la proba (n-fitness / sumfitness)
+
+            //generation
+            for (int i = 0; i < population; i++) {
+                Solution p1 = tirageSolution(proba, null);
+                Solution p2 = tirageSolution(proba, p1);
+                Solution child = croisement(p1, p2, proba);
+                child = mutate(child);
+                if(bestSolution == null || child.getSommeDistance(root, distances) < bestSolution.getSommeDistance(root, distances))
+                    bestSolution = child;
+                newGeneration.add(child);
+            }
+        }
+        System.out.println("Best gen:");
+        bestSolution.display(root, distances);
         //generer une nouvelle generation
+        //on prend els 10
+
     }
+
+    public Solution tirageSolution(HashMap<Solution, Double> proba, Solution exclude){
+        Random random = new Random();
+        double tirage = random.nextDouble();
+        double sommeProba = 0.d;
+        for(Map.Entry<Solution, Double> entry : proba.entrySet()) {
+            sommeProba += proba.get(entry.getValue());
+            if (tirage < sommeProba && entry.getKey() != exclude)
+                return entry.getKey();
+        }
+        System.out.println("Check Tirage");
+        return null;
+    }
+
+    public Solution croisement(Solution p1, Solution p2, HashMap<Solution, Double> proba){
+        Solution returner = new Solution();
+        ArrayList<Client> compteur = new ArrayList<Client>(clients);
+        Random random = new Random();
+        Double p1Proba = proba.get(p1)/(proba.get(p1) + proba.get(p2));
+        for(int i = 0; i < Math.max(p1.getRoutes().size(), p2.getRoutes().size()); i++){
+            Route r1 = p1.getRoutes().get(i);
+            Route r2 = p2.getRoutes().get(i);
+            Route newRoute = new Route();
+            if(r1 == null){
+                for(Client c: r2.getRoute()){
+                    if(compteur.contains(c)) {
+                        if(newRoute.add(c))
+                            compteur.remove(c);
+                    }
+                }
+            }
+            else if (r2 == null){
+                for(Client c: r1.getRoute()){
+                    if(compteur.contains(c)) {
+                        if(newRoute.add(c))
+                            compteur.remove(c);
+                    }
+                }
+            }
+            else{
+                for(int j = 0; j < Math.max(r1.getRoute().size(), r2.getRoute().size()); j++){
+                    Client c1 = r1.getRoute().get(j);
+                    if(newRoute.isChargeOk(c1))
+                        c1 = null;
+
+                    Client c2 = r2.getRoute().get(j);
+                    if(newRoute.isChargeOk(c2))
+                        c2 = null;
+
+                    if(c1 == null && c2 != null){
+                        newRoute.add(c2);
+                        compteur.remove(c2);
+                    }
+                    else if(c2 == null){
+                        newRoute.add(c1);
+                        compteur.remove(c1);
+                    }
+                    else{
+                        if(random.nextFloat() < p1Proba && compteur.contains(c1)){
+                            if(newRoute.add(c1))
+                                compteur.remove(c1);
+                        }
+                        else if(compteur.contains(c2)){
+                            if(newRoute.add(c2))
+                                compteur.remove(c2);
+                        }
+                        else{
+                            Client tempC = compteur.get(random.nextInt(compteur.size()-1));
+                            if(newRoute.add(tempC))
+                                compteur.remove(tempC);
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    public Solution mutate(Solution child){
+        Random random = new Random();
+        Solution returner = child;
+        if(random.nextFloat() < 0.1){
+            ArrayList<Solution> solutions = generateAllNeighborsByMove(child);
+            returner = solutions.get(random.nextInt(solutions.size()-1));
+        }
+        return returner;
+    }
+
 }
