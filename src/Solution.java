@@ -93,7 +93,7 @@ public class Solution {
         ArrayList<Client> myclients = (ArrayList<Client>) appli.clients.clone();
 
         Random rand = new Random();
-        int nbMinRoute = appli.poidTotal / 100 + appli.poidTotal%100 != 0 ? 1 : 0;
+        int nbMinRoute = (appli.poidTotal / 100) + (appli.poidTotal%100 != 0 ? 1 : 0);
         int nbRoutes = rand.nextInt(appli.clients.size()-nbMinRoute) + nbMinRoute;
         ArrayList<Route> routes = new ArrayList<>();
         for(int i = 0; i < nbRoutes; i++){
@@ -102,8 +102,8 @@ public class Solution {
         while(!myclients.isEmpty()){
             int indexClient = rand.nextInt(myclients.size());
             int indexRoute = rand.nextInt(routes.size());
-            routes.get(indexRoute).add(myclients.get(indexClient));
-            myclients.remove(indexClient);
+            if(routes.get(indexRoute).add(myclients.get(indexClient)))
+                myclients.remove(indexClient);
         }
         Iterator<Route> i = routes.iterator();
         while(i.hasNext()){

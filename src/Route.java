@@ -7,7 +7,7 @@ public class Route{
     private int charge;
 
     public Route() {
-
+        charge = 0;
     }
 
     public static Route clone(Route r){

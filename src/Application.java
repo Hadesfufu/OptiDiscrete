@@ -287,11 +287,11 @@ public class Application {
         double sommefitness;
         Solution bestSolution = null;
         for (int nbIteration = 0; nbIteration < 50; nbIteration++) {
-
+            System.out.println("===== Generating new Generation ====");
             sommefitness = 0.d;
             for (int i = 0; i < population; i++) {
                 baseGeneration.add(Solution.generateRandom(this));
-                sommefitness += 1/baseGeneration.get(i).getSommeDistance(root, distances);
+                sommefitness += baseGeneration.get(i).getSommeDistance(root, distances);
             }
             for (int i = 0; i < population; i++) {
                 proba.put(baseGeneration.get(i), baseGeneration.get(i).getSommeDistance(root, distances) / sommefitness);
@@ -318,15 +318,19 @@ public class Application {
 
     public Solution tirageSolution(HashMap<Solution, Double> proba, Solution exclude){
         Random random = new Random();
-        double tirage = random.nextDouble();
-        double sommeProba = 0.d;
-        for(Map.Entry<Solution, Double> entry : proba.entrySet()) {
-            sommeProba += proba.get(entry.getValue());
-            if (tirage < sommeProba && entry.getKey() != exclude)
-                return entry.getKey();
+        Solution returner = exclude;
+        while(returner == exclude) {
+            double tirage = random.nextDouble();
+            double sommeProba = 0.d;
+            for (Map.Entry<Solution, Double> entry : proba.entrySet()) {
+                sommeProba += entry.getValue();
+                if (tirage < sommeProba && entry.getKey() != exclude) {
+                    returner = entry.getKey();
+                    break;
+                }
+            }
         }
-        System.out.println("Check Tirage");
-        return null;
+        return returner;
     }
 
     public Solution croisement(Solution p1, Solution p2, HashMap<Solution, Double> proba){
@@ -334,11 +338,17 @@ public class Application {
         ArrayList<Client> compteur = new ArrayList<Client>(clients);
         Random random = new Random();
         Double p1Proba = proba.get(p1)/(proba.get(p1) + proba.get(p2));
-        for(int i = 0; i < Math.max(p1.getRoutes().size(), p2.getRoutes().size()); i++){
-            Route r1 = p1.getRoutes().get(i);
-            Route r2 = p2.getRoutes().get(i);
+        for(int i = 0; i < Math.max(p1.getRoutes().size()-1, p2.getRoutes().size()-1); i++){
+            Route r1 = null;
+            Route r2 = null;
+            if(i < p1.getRoutes().size())
+                r1 = p1.getRoutes().get(i);
+
+            if(i < p2.getRoutes().size())
+                r2 = p2.getRoutes().get(i);
+
             Route newRoute = new Route();
-            if(r1 == null){
+            if(r1 == null && r2 != null){
                 for(Client c: r2.getRoute()){
                     if(compteur.contains(c)) {
                         if(newRoute.add(c))
@@ -346,7 +356,7 @@ public class Application {
                     }
                 }
             }
-            else if (r2 == null){
+            else if (r2 == null && r1 != null){
                 for(Client c: r1.getRoute()){
                     if(compteur.contains(c)) {
                         if(newRoute.add(c))
@@ -354,25 +364,35 @@ public class Application {
                     }
                 }
             }
-            else{
-                for(int j = 0; j < Math.max(r1.getRoute().size(), r2.getRoute().size()); j++){
-                    Client c1 = r1.getRoute().get(j);
-                    if(newRoute.isChargeOk(c1))
-                        c1 = null;
+            else if(r1 != null && r2 != null){
+                //System.out.println(r1.getRoute().size());
+                //System.out.println(r2.getRoute().size());
+                for(int j = 0; j < Math.max(r1.getRoute().size()-1, r2.getRoute().size()-1); j++){
+                    Client c1 = null;
+                    if( j < r1.getRoute().size()) {
+                        c1 = r1.getRoute().get(j);
+                        if (!newRoute.isChargeOk(c1)) {
+                            c1 = null;
+                        }
+                    }
 
-                    Client c2 = r2.getRoute().get(j);
-                    if(newRoute.isChargeOk(c2))
-                        c2 = null;
+                    Client c2 = null;
+                    if(j < r2.getRoute().size()) {
+                        c2 = r2.getRoute().get(j);
+                        if (!newRoute.isChargeOk(c2)) {
+                            c2 = null;
+                        }
+                    }
 
                     if(c1 == null && c2 != null){
                         newRoute.add(c2);
                         compteur.remove(c2);
                     }
-                    else if(c2 == null){
+                    else if(c2 == null && c1 != null){
                         newRoute.add(c1);
                         compteur.remove(c1);
                     }
-                    else{
+                    else if(c1 != null && c2 != null){
                         if(random.nextFloat() < p1Proba && compteur.contains(c1)){
                             if(newRoute.add(c1))
                                 compteur.remove(c1);
@@ -387,16 +407,27 @@ public class Application {
                                 compteur.remove(tempC);
                         }
                     }
+                    else{
+                        System.out.println("Empty client - La charge n'est pas ok");
+                        System.out.println(newRoute.getCharge());
+                    }
                 }
             }
+            else{
+                System.out.println("Empty route");
+            }
+            if(!newRoute.isEmpty())
+                returner.addRoute(newRoute);
         }
-        return null;
+        return returner;
     }
 
     public Solution mutate(Solution child){
         Random random = new Random();
         Solution returner = child;
-        if(random.nextFloat() < 0.1){
+        if(child.getRoutes().size() < 5)
+            System.out.println("BUG");
+        if(random.nextFloat() < 0.5){
             ArrayList<Solution> solutions = generateAllNeighborsByMove(child);
             returner = solutions.get(random.nextInt(solutions.size()-1));
         }
