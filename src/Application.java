@@ -1,3 +1,4 @@
+import javax.xml.transform.Source;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -58,10 +59,13 @@ public class Application {
             //System.out.println("DEBUT ROUTE!");
             currentRoute = new Route();
             routes.add(currentRoute);
-            currentRoute.add(root);
             boolean cont = true;
             while (cont) {
-                Client newClient = getVoisinageLess(root, currentRoute.getLast(), nonadded, currentRoute);
+                Client newClient;
+                if(currentRoute.isEmpty())
+                    newClient = getVoisinageLess(root, root, nonadded, currentRoute);
+                else
+                    newClient = getVoisinageLess(root, currentRoute.getLast(), nonadded, currentRoute);
                 if (newClient != null) {
                     currentRoute.add(newClient);
                     nonadded.remove(newClient);
@@ -74,6 +78,10 @@ public class Application {
         baseSolution = new Solution(routes);
         System.out.println("Base solution :");
         baseSolution.display(root, distances);
+    }*/
+
+    /*public void generateBaseSolution(){
+        baseSolution = Solution.generateRandom(this);
     }*/
 
     public void generateBaseSolution() {
@@ -277,18 +285,18 @@ public class Application {
         ArrayList<Route> routes = s.getRoutes();
         for(int ir = 0; ir < routes.size(); ir++) {
             Route route1 = routes.get(ir);
-            for (int ic = 1; ic < route1.getRoute().size() - 1; ic++) {
+            for (int ic = 0; ic < route1.getRoute().size(); ic++) {
                 Client c1 = route1.getRoute().get(ic);
                 for (int jr = 0; jr < routes.size(); jr++) {
                     Route route2 = routes.get(jr);
                     if (route2.isChargeOk(c1)) {
-                        for (int jc = 1; jc < route2.getRoute().size() - 1; jc++) {
+                        for (int jc = 0; jc < route2.getRoute().size(); jc++) {
                             Solution news = Solution.clone(s);
                             news.getRoutes().get(ir).remove(c1);
-                            /*if(news.getRoutes().get(ir).isEmpty()){
-                                news.getRoutes().remove(ir);
-                            }*/
                             news.getRoutes().get(jr).addAtInteger(jc, c1);
+                            if(news.getRoutes().get(ir).isEmpty()) {
+                                news.getRoutes().remove(ir);
+                            }
                             result.add(news);
                         }
                     }

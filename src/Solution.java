@@ -56,6 +56,7 @@ public class Solution {
     public void display(Client root, Double[][] distances){
         System.out.println("Solution n°" + index);
         System.out.println("Distance : " + getSommeDistance(root, distances));
+        System.out.println("Nb routes : " + routes.size());
     }
 
     public Route getLightestRoute(){
