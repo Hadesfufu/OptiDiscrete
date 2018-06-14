@@ -408,8 +408,8 @@ public class Application {
                         }
                     }
                     else{
-                        System.out.println("Empty client - La charge n'est pas ok");
-                        System.out.println(newRoute.getCharge());
+                        //System.out.println("Empty client - La charge n'est pas ok");
+                        //System.out.println(newRoute.getCharge());
                     }
                 }
             }
