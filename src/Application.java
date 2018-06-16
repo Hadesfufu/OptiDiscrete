@@ -80,11 +80,12 @@ public class Application {
         baseSolution.display(root, distances);
     }*/
 
-    /*public void generateBaseSolution(){
+    public void generateBaseSolution(){
         baseSolution = Solution.generateRandom(this);
-    }*/
+        baseSolution.display(root, distances);
+    }
 
-    public void generateBaseSolution() {
+    /*public void generateBaseSolution() {
         ArrayList<Client> nonadded = clients;
         nonadded.remove(root);
         Route currentRoute;
@@ -101,7 +102,7 @@ public class Application {
         baseSolution = new Solution(routes);
         System.out.println("Base solution :");
         baseSolution.display(root, distances);
-    }
+    }*/
 
     public Client getVoisinageLess(Client root, Client origin, ArrayList<Client> ar, Route r) {
         Client good = null;
@@ -197,36 +198,39 @@ public class Application {
         currentBestSolution.display(root, distances);
     }
 
-    public void taboo(){
+    public void taboo(int nbIteration, int tabooSize){
         //HashMap<String, Solution> taboo = new HashMap<>();
         ArrayList<String> taboo = new ArrayList<>();
         Solution globalBestSolution = baseSolution;
+        Solution currentBestSolution = baseSolution;
         Solution bestCandidat = baseSolution;
         Random r = new Random();
         int i = 0;
-        while(taboo.size() < 1000 && bestCandidat != null ) {
-            taboo.add(bestCandidat.serialize());
+        while(i < nbIteration && bestCandidat != null ) {
             ArrayList<Solution> allNeighbors = generateAllNeighborsByMove(bestCandidat);
             /////////
-            ArrayList<Solution> bonus = generateAllNeighborsBySwap(bestCandidat);
+            /*ArrayList<Solution> bonus = generateAllNeighborsBySwap(bestCandidat);
             for(Solution s: bonus){
                 allNeighbors.add(s);
-            }
+            }*/
             /////////
             bestCandidat = null;
             int stopper = 0;
+            Boolean containedInTaboo;
             for (Solution s : allNeighbors) {
+                containedInTaboo = taboo.contains(s.serialize());
                 if(bestCandidat == null){
-                    if(!taboo.contains(s.serialize())) {
+                    if(!containedInTaboo) {
                         bestCandidat = s;
                     }
                 }
-                else if (!taboo.contains(s.serialize()) && (Double.compare(s.getSommeDistance(root, distances), bestCandidat.getSommeDistance(root, distances)) < 0 )){ // peu pas reselect best
+                else if (!containedInTaboo && (Double.compare(s.getSommeDistance(root, distances), bestCandidat.getSommeDistance(root, distances)) < 0 )){ // peu pas reselect best
                     bestCandidat = s;
                 }
-                if(taboo.contains(s.serialize()))
+                if(containedInTaboo)
                     stopper++;
             }
+
             if(stopper == taboo.size() && stopper == allNeighbors.size()) {
                 System.out.println("ALL SOLUTIONS EXPLORED ! stopper : " + stopper + " taboo list : " + taboo.size() + " neighbors :" + allNeighbors.size());
                 break;
@@ -237,10 +241,19 @@ public class Application {
                 System.out.println("place break here");
             }
             else {
-                if (bestCandidat.getSommeDistance(root, distances) < globalBestSolution.getSommeDistance(root, distances)) {
-                    globalBestSolution = bestCandidat;
-                    //globalBestSolution.display(root, distances);
+                if (bestCandidat.getSommeDistance(root, distances) < currentBestSolution.getSommeDistance(root, distances)) {
+                    if(currentBestSolution.getSommeDistance(root, distances) < globalBestSolution.getSommeDistance(root, distances)){
+                        globalBestSolution = currentBestSolution;
+                    }
                 }
+                else{
+                    //System.out.println("best candidat is worst than current best solution, ");
+                    taboo.add(bestCandidat.serialize());
+                    if(taboo.size() > tabooSize){
+                        taboo.remove(taboo.get(0));
+                    }
+                }
+                currentBestSolution = bestCandidat;
             }
 
             i++;
