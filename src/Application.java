@@ -306,7 +306,7 @@ public class Application {
         return result;
     }
 
-    public void algoGenetique(int population){
+    public void algoGenetique(int population, int s_nbIteration){
         //generation aletaoire de base
         ArrayList<Solution> baseGeneration = new ArrayList<>();
         ArrayList<Solution> newGeneration = new ArrayList<>();
@@ -314,8 +314,9 @@ public class Application {
         Random random = new Random();
         double sommefitness;
         Solution bestSolution = null;
-        for (int nbIteration = 0; nbIteration < 50; nbIteration++) {
-            System.out.println("===== Generating new Generation ====");
+        for (int nbIteration = 0; nbIteration < s_nbIteration; nbIteration++) {
+            if(nbIteration % 200 == 0)
+                System.out.println("===== Generating new Generation ==== : " + nbIteration);
             sommefitness = 0.d;
             for (int i = 0; i < population; i++) {
                 baseGeneration.add(Solution.generateRandom(this));
@@ -450,14 +451,28 @@ public class Application {
         return returner;
     }
 
+    /*public Solution croisement(Solution p1, Solution p2, HashMap<Solution, Double> proba){
+        ArrayList<Client> clients1 = new ArrayList<>();
+        ArrayList<Client> clients2 = new ArrayList<>();
+
+    }*/
     public Solution mutate(Solution child){
         Random random = new Random();
         Solution returner = child;
         if(child.getRoutes().size() < 5)
             System.out.println("BUG");
+
+        ArrayList<Solution> solutions = generateAllNeighborsByMove(child);
         if(random.nextFloat() < 0.5){
-            ArrayList<Solution> solutions = generateAllNeighborsByMove(child);
             returner = solutions.get(random.nextInt(solutions.size()-1));
+        }
+        else{
+            Solution bestSolution = null;
+            for(Solution s: solutions){
+                if(bestSolution == null || bestSolution.getSommeDistance(root, distances) < s.getSommeDistance(root, distances))
+                    bestSolution = s;
+            }
+            returner = bestSolution;
         }
         return returner;
     }
