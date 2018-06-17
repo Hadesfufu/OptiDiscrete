@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/ProjetOptimisationDiscrete.iml" filepath="$PROJECT_DIR$/ProjetOptimisationDiscrete.iml" />
+      <module fileurl="file://$PROJECT_DIR$/OptiDiscrete.iml" filepath="$PROJECT_DIR$/OptiDiscrete.iml" />
     </modules>
   </component>
 </project>

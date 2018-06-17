@@ -19,9 +19,9 @@ public class Application {
 
     }
 
-    public void load(String data) {
+    public void load() {
         try {
-            BufferedReader br = new BufferedReader(new FileReader("data/" + data));
+            BufferedReader br = new BufferedReader(new FileReader("data/data01.txt"));
             String line = br.readLine();
             line = br.readLine();
             root = new Client(line);
@@ -72,12 +72,13 @@ public class Application {
             currentRoute.add(root);
         }
         baseSolution = new Solution(routes);
-        printBaseSolution();
+        System.out.println("Base solution :");
+        baseSolution.display(root, distances);
     }
 
     public void generateBaseSolutionRandom() {
         baseSolution = Solution.generateRandom(this);
-        printBaseSolution();
+        baseSolution.display(root, distances);
     }
 
     public void generateBaseSolutionWithMaximalRoads() {
@@ -95,12 +96,8 @@ public class Application {
         }
 
         baseSolution = new Solution(routes);
-        printBaseSolution();
-    }
-
-    public void printBaseSolution() {
-        System.out.println("\n----Solution de base ");
-        baseSolution.displayWithoutSerialize(root, distances);
+        System.out.println("Base solution :");
+        baseSolution.display(root, distances);
     }
 
     public Client getVoisinageLess(Client root, Client origin, ArrayList<Client> ar, Route r) {
@@ -116,22 +113,15 @@ public class Application {
         return good;
     }
 
-    public Double taboo(int nbIteration, int tabooSize, boolean move, boolean swap) {
+    public Double taboo(int nbIteration, int tabooSize) {
         ArrayList<String> taboo = new ArrayList<>();
         Solution globalBestSolution = baseSolution;
         Solution currentBestSolution = baseSolution;
         Solution bestCandidat = baseSolution;
-
+        Random r = new Random();
         int i = 0;
         while (i < nbIteration && bestCandidat != null) {
-            ArrayList<Solution> allNeighbors = new ArrayList<>();
-            if (move) {
-                allNeighbors.addAll(generateAllNeighborsByMove(bestCandidat));
-            }
-            if (swap) {
-                ArrayList<Solution> swapNeighbors = generateAllNeighborsBySwap(bestCandidat);
-                allNeighbors.addAll(swapNeighbors);
-            }
+            ArrayList<Solution> allNeighbors = generateAllNeighborsByMove(bestCandidat);
             bestCandidat = null;
             int stopper = 0;
             Boolean containedInTaboo;
@@ -172,8 +162,7 @@ public class Application {
 
             i++;
         }
-        System.out.println("----Solution finale ");
-        globalBestSolution.displayWithoutSerialize(root, distances);
+        globalBestSolution.display(root, distances);
         return globalBestSolution.getSommeDistance(root, distances);
     }
 
@@ -382,60 +371,74 @@ public class Application {
     public Solution croisement(Solution p1, Solution p2, HashMap<Solution, Double> proba) {
         Solution returner = new Solution();
         ArrayList<Client> clients1 = new ArrayList<>();
-        for (Route r : p1.getRoutes()) {
-            for (Client c : r.getClients()) {
+        ArrayList<Client> compteur = new ArrayList<Client>(clients);
+        for(Route r: p1.getRoutes()){
+            for(Client c: r.getClients()){
                 clients1.add(c);
             }
         }
         ArrayList<Client> clients2 = new ArrayList<>();
-        for (Route r : p2.getRoutes()) {
+        for(Route r: p2.getRoutes()) {
             for (Client c : r.getClients()) {
                 clients2.add(c);
             }
         }
         Random random = new Random();
         ArrayList<Client> newClients = new ArrayList<>();
-        int cut = random.nextInt(clients1.size() - 1);
-        for (int i = 0; i < cut; i++) {
-            if (i < cut)
+        int cut = random.nextInt(clients1.size()-1);
+        Client clientToAdd;
+        for(int i = 0; i < clients1.size(); i++){
+            if(i < cut && compteur.contains(clients1.get(i))) {
                 newClients.add(clients1.get(i));
-            else
-                newClients.add(clients2.get(i));
+                compteur.remove(clients1.get(i));
+            }
+            else if(compteur.contains(clients2.get(i))) {
+                newClients.add(clientToAdd = clients2.get(i));
+                compteur.remove(clients2.get(i));
+            }
+        }
+
+        for(Client c: compteur){
+            newClients.add(random.nextInt(newClients.size()-1), c);
+            //newClients.add(c);
         }
 
         Iterator<Client> it = newClients.iterator();
         Route newRoute = new Route();
-        Boolean inputed = false;
-        while (it.hasNext()) {
+
+        while(it.hasNext()){
             Client c = it.next();
-            if (newRoute.add(c)) {
+            if(newRoute.add(c)){
                 it.remove();
-            } else {
-                for (Route r : returner.getRoutes()) {
-                    if (inputed = r.isChargeOk(c))
-                        break;
+            }
+            else {
+                Boolean stop = false;
+                for (int i = 0; i < returner.getRoutes().size() && !stop; i++) {
+                    stop = returner.getRoutes().get(i).add(c);
+                    if (stop)
+                        it.remove();
                 }
-                if (!inputed) {
+                if (!stop) {
                     returner.addRoute(newRoute);
                     newRoute = new Route();
                     newRoute.add(c);
+                    it.remove();
                 }
-                it.remove();
             }
         }
         returner.addRoute(newRoute);
         return returner;
     }
 
-    public Solution mutate(Solution child) {
+    public Solution mutate(Solution child){
         Random random = new Random();
         Solution returner = child;
-        if (child.getRoutes().size() < 5)
-            System.out.println("BUG");
+        if(child.getRoutes().size() < 5)
+            System.out.println("BUG child size : " + child.getRoutes().size());
 
         ArrayList<Solution> solutions = generateAllNeighborsByMove(child);
-        if (random.nextFloat() < 0.5) {
-            returner = solutions.get(random.nextInt(solutions.size() - 1));
+        if(random.nextFloat() < 0.5){
+            returner = solutions.get(random.nextInt(solutions.size()-1));
         }
         /*else{
             Solution bestSolution = null;

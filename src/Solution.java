@@ -53,12 +53,8 @@ public class Solution {
         return distance;
     }
 
-    public void displayWithoutSerialize(Client root, Double[][] distances){
-        System.out.println("    Solution générée avec " + routes.size() + " route et une distance de " + getSommeDistance(root, distances));
-    }
-
     public void display(Client root, Double[][] distances){
-        System.out.println("Solution :" + serialize() + " Distance : " + getSommeDistance(root, distances));
+        System.out.println("Solution :" + serialize() + " Distance : " + getSommeDistance(root, distances) + " nb Routes : " + getRoutes().size());
     }
 
     public Route getLightestRoute(){
