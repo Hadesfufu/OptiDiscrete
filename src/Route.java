@@ -3,7 +3,7 @@ import java.util.ArrayList;
 public class Route{
 
     private static int maxCharge = 100;
-    private ArrayList<Client> route = new ArrayList<>();
+    private ArrayList<Client> clients = new ArrayList<>();
     private int charge;
 
     public Route() {
@@ -12,7 +12,7 @@ public class Route{
 
     public static Route clone(Route r){
         Route returner = new Route();
-        for(Client c : r.getRoute()){
+        for(Client c : r.getClients()){
             returner.add(c);
         }
         returner.getCharge();
@@ -24,7 +24,7 @@ public class Route{
         if (charge + c.getQ() > maxCharge)
             return false;
         charge += c.getQ();
-        route.add(c);
+        clients.add(c);
         return true;
     }
 
@@ -32,12 +32,12 @@ public class Route{
         if (charge + c.getQ() > maxCharge)
             return false;
         charge += c.getQ();
-        route.add(index, c);
+        clients.add(index, c);
         return true;
     }
 
     public void remove(Client c){
-        route.remove(c);
+        clients.remove(c);
         charge -= c.getQ();
     }
 
@@ -46,7 +46,7 @@ public class Route{
     }
 
     public boolean isEmpty(){
-        return route.isEmpty();
+        return clients.isEmpty();
     }
 
     public boolean isChargeOk() {
@@ -55,11 +55,11 @@ public class Route{
 
     public double getDistance(Client root, Double[][] distances) {
         double d = 0.d;
-        d+= distances[root.getI()][route.get(0).getI()];
-        for (int i = 0; i < route.size() - 1; i++) {
-            d+= distances[route.get(i).getI()][route.get(i+1).getI()];
+        d+= distances[root.getI()][clients.get(0).getI()];
+        for (int i = 0; i < clients.size() - 1; i++) {
+            d+= distances[clients.get(i).getI()][clients.get(i+1).getI()];
         }
-        d+= distances[route.get(route.size()-1).getI()][root.getI()];
+        d+= distances[clients.get(clients.size()-1).getI()][root.getI()];
         return d;
     }
 
@@ -73,7 +73,7 @@ public class Route{
 
     public Integer getCharge() {
         int i = 0;
-        for(Client c: route){
+        for(Client c: clients){
             i += c.getQ();
         }
         charge = i;
@@ -81,20 +81,20 @@ public class Route{
     }
 
     public Client getLast() {
-        return route.get(route.size() - 1);
+        return clients.get(clients.size() - 1);
     }
 
-    public ArrayList<Client> getRoute() {
-        return route;
+    public ArrayList<Client> getClients() {
+        return clients;
     }
 
     public void setRoute(ArrayList<Client> route) {
-        this.route = route;
+        this.clients = route;
     }
 
     public String serialize(){
         String s = "R";
-        for(Client c: route){
+        for(Client c: clients){
             s += "C"+c.getI();
         }
         return s;

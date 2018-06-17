@@ -54,9 +54,7 @@ public class Solution {
     }
 
     public void display(Client root, Double[][] distances){
-        System.out.println("Solution n°" + index);
-        System.out.println("Distance : " + getSommeDistance(root, distances));
-        System.out.println("Nb routes : " + routes.size());
+        System.out.println("Solution :" + serialize() + " Distance : " + getSommeDistance(root, distances));
     }
 
     public Route getLightestRoute(){
@@ -92,6 +90,13 @@ public class Solution {
 
     public static Solution generateRandom(Application appli){
         ArrayList<Client> myclients = (ArrayList<Client>) appli.clients.clone();
+
+        for(Client c: myclients){
+            if(c.getI() == 0) {
+                myclients.remove(c);
+                break;
+            }
+        }
 
         Random rand = new Random();
         int nbMinRoute = (appli.poidTotal / 100) + (appli.poidTotal%100 != 0 ? 1 : 0);

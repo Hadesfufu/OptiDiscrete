@@ -1,3 +1,5 @@
+import sun.misc.Cleaner;
+
 import javax.xml.transform.Source;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -145,12 +147,12 @@ public class Application {
                 do {
                     //System.out.println(i);
                     //System.out.println("new Generation");
-                    int r1Size = r1.getRoute().size();
+                    int r1Size = r1.getClients().size();
                     Integer c1i = r1Size == 3 ? 1 : r.nextInt(r1Size - 2 - 1) + 1;
-                    c1 = r1.getRoute().get(c1i);
-                    int r2Size = r2.getRoute().size();
+                    c1 = r1.getClients().get(c1i);
+                    int r2Size = r2.getClients().size();
                     Integer c2i = r2Size == 3 ? 1 : r.nextInt(r2Size - 2 - 1) + 1;
-                    c2 = r2.getRoute().get(c2i);
+                    c2 = r2.getClients().get(c2i);
                     //System.out.println(c1i + " " + c2i);
                     r1.remove(c1);
                     r2.remove(c2);
@@ -198,7 +200,7 @@ public class Application {
         currentBestSolution.display(root, distances);
     }
 
-    public void taboo(int nbIteration, int tabooSize){
+    public Double taboo(int nbIteration, int tabooSize){
         //HashMap<String, Solution> taboo = new HashMap<>();
         ArrayList<String> taboo = new ArrayList<>();
         Solution globalBestSolution = baseSolution;
@@ -259,8 +261,9 @@ public class Application {
             i++;
             //currentBestSolution.display(root, distances);
         }
-        System.out.println("Minimum local atteint aprés " + i + " essais");
+        //System.out.println("Minimum local atteint aprés " + i + " essais");
         globalBestSolution.display(root, distances);
+        return globalBestSolution.getSommeDistance(root, distances);
     }
 
     public ArrayList<Solution> generateAllNeighborsBySwap(Solution s){
@@ -270,10 +273,10 @@ public class Application {
             Route route1 = routes.get(ir);
             for(int jr = ir+1; jr < routes.size(); jr++){
                 Route route2 = routes.get(jr);
-                for(int ic = 1; ic < route1.getRoute().size()-1; ic++) {
-                    Client c1 = route1.getRoute().get(ic);
-                    for (int jc = 1; jc < route2.getRoute().size()-1; jc++) {
-                        Client c2 = route2.getRoute().get(jc);
+                for(int ic = 1; ic < route1.getClients().size()-1; ic++) {
+                    Client c1 = route1.getClients().get(ic);
+                    for (int jc = 1; jc < route2.getClients().size()-1; jc++) {
+                        Client c2 = route2.getClients().get(jc);
                         route1.remove(c1);
                         route2.remove(c2);
                         if (route1.isChargeOk(c2) && route2.isChargeOk(c1)) {
@@ -298,12 +301,12 @@ public class Application {
         ArrayList<Route> routes = s.getRoutes();
         for(int ir = 0; ir < routes.size(); ir++) {
             Route route1 = routes.get(ir);
-            for (int ic = 0; ic < route1.getRoute().size(); ic++) {
-                Client c1 = route1.getRoute().get(ic);
+            for (int ic = 0; ic < route1.getClients().size(); ic++) {
+                Client c1 = route1.getClients().get(ic);
                 for (int jr = 0; jr < routes.size(); jr++) {
                     Route route2 = routes.get(jr);
                     if (route2.isChargeOk(c1)) {
-                        for (int jc = 0; jc < route2.getRoute().size(); jc++) {
+                        for (int jc = 0; jc < route2.getClients().size(); jc++) {
                             Solution news = Solution.clone(s);
                             news.getRoutes().get(ir).remove(c1);
                             news.getRoutes().get(jr).addAtInteger(jc, c1);
@@ -374,7 +377,7 @@ public class Application {
         }
         return returner;
     }
-
+    /*
     public Solution croisement(Solution p1, Solution p2, HashMap<Solution, Double> proba){
         Solution returner = new Solution();
         ArrayList<Client> compteur = new ArrayList<Client>(clients);
@@ -391,7 +394,7 @@ public class Application {
 
             Route newRoute = new Route();
             if(r1 == null && r2 != null){
-                for(Client c: r2.getRoute()){
+                for(Client c: r2.getClients()){
                     if(compteur.contains(c)) {
                         if(newRoute.add(c))
                             compteur.remove(c);
@@ -399,7 +402,7 @@ public class Application {
                 }
             }
             else if (r2 == null && r1 != null){
-                for(Client c: r1.getRoute()){
+                for(Client c: r1.getClients()){
                     if(compteur.contains(c)) {
                         if(newRoute.add(c))
                             compteur.remove(c);
@@ -407,20 +410,20 @@ public class Application {
                 }
             }
             else if(r1 != null && r2 != null){
-                //System.out.println(r1.getRoute().size());
-                //System.out.println(r2.getRoute().size());
-                for(int j = 0; j < Math.max(r1.getRoute().size()-1, r2.getRoute().size()-1); j++){
+                //System.out.println(r1.getClients().size());
+                //System.out.println(r2.getClients().size());
+                for(int j = 0; j < Math.max(r1.getClients().size()-1, r2.getClients().size()-1); j++){
                     Client c1 = null;
-                    if( j < r1.getRoute().size()) {
-                        c1 = r1.getRoute().get(j);
+                    if( j < r1.getClients().size()) {
+                        c1 = r1.getClients().get(j);
                         if (!newRoute.isChargeOk(c1)) {
                             c1 = null;
                         }
                     }
 
                     Client c2 = null;
-                    if(j < r2.getRoute().size()) {
-                        c2 = r2.getRoute().get(j);
+                    if(j < r2.getClients().size()) {
+                        c2 = r2.getClients().get(j);
                         if (!newRoute.isChargeOk(c2)) {
                             c2 = null;
                         }
@@ -463,12 +466,55 @@ public class Application {
         }
         return returner;
     }
-
-    /*public Solution croisement(Solution p1, Solution p2, HashMap<Solution, Double> proba){
+    */
+    public Solution croisement(Solution p1, Solution p2, HashMap<Solution, Double> proba) {
+        Solution returner = new Solution();
         ArrayList<Client> clients1 = new ArrayList<>();
+        for(Route r: p1.getRoutes()){
+            for(Client c: r.getClients()){
+                clients1.add(c);
+            }
+        }
         ArrayList<Client> clients2 = new ArrayList<>();
+        for(Route r: p2.getRoutes()) {
+            for (Client c : r.getClients()) {
+                clients2.add(c);
+            }
+        }
+        Random random = new Random();
+        ArrayList<Client> newClients = new ArrayList<>();
+        int cut = random.nextInt(clients1.size()-1);
+        for(int i = 0; i < cut; i++){
+            if(i < cut)
+                newClients.add(clients1.get(i));
+            else
+                newClients.add(clients2.get(i));
+        }
 
-    }*/
+        Iterator<Client> it = newClients.iterator();
+        Route newRoute = new Route();
+        Boolean inputed = false;
+        while(it.hasNext()){
+            Client c = it.next();
+            if(newRoute.add(c)){
+                it.remove();
+            }
+            else{
+                for(Route r : returner.getRoutes()){
+                    if( inputed = r.isChargeOk(c))
+                        break;
+                }
+                if(!inputed) {
+                    returner.addRoute(newRoute);
+                    newRoute = new Route();
+                    newRoute.add(c);
+                }
+                it.remove();
+            }
+        }
+        returner.addRoute(newRoute);
+        return returner;
+    }
     public Solution mutate(Solution child){
         Random random = new Random();
         Solution returner = child;
@@ -479,14 +525,14 @@ public class Application {
         if(random.nextFloat() < 0.5){
             returner = solutions.get(random.nextInt(solutions.size()-1));
         }
-        else{
+        /*else{
             Solution bestSolution = null;
             for(Solution s: solutions){
                 if(bestSolution == null || bestSolution.getSommeDistance(root, distances) < s.getSommeDistance(root, distances))
                     bestSolution = s;
             }
             returner = bestSolution;
-        }
+        }*/
         return returner;
     }
 
