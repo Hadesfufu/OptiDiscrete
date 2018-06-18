@@ -233,7 +233,7 @@ public class Application {
         return result;
     }
 
-    public void algoGenetique(int population, int s_nbIteration) {
+    public void algoGenetique(int population, int s_nbIteration, int method, float rate) {
         //generation aletaoire de base
         ArrayList<Solution> baseGeneration = new ArrayList<>();
         ArrayList<Solution> newGeneration = new ArrayList<>();
@@ -242,8 +242,8 @@ public class Application {
         double sommefitness;
         Solution bestSolution = null;
         for (int nbIteration = 0; nbIteration < s_nbIteration; nbIteration++) {
-            if (nbIteration % 200 == 0)
-                System.out.println("===== Generating new Generation ==== : " + nbIteration);
+            //if (nbIteration % 200 == 0)
+            System.out.println("===== Generating new Generation ==== : " + nbIteration);
             sommefitness = 0.d;
             for (int i = 0; i < population; i++) {
                 baseGeneration.add(Solution.generateRandom(this));
@@ -258,8 +258,10 @@ public class Application {
             for (int i = 0; i < population; i++) {
                 Solution p1 = tirageSolution(proba, null);
                 Solution p2 = tirageSolution(proba, p1);
-                Solution child = croisement(p1, p2, proba);
-                child = mutate(child);
+                Solution child = null;
+                if(method == 1) child = croisementMethod1(p1, p2, proba);
+                else child = croisementMethod2(p1, p2, proba);
+                child = mutate(child, rate);
                 if (bestSolution == null || child.getSommeDistance(root, distances) < bestSolution.getSommeDistance(root, distances))
                     bestSolution = child;
                 newGeneration.add(child);
@@ -289,8 +291,8 @@ public class Application {
         return returner;
     }
 
-    /*
-    public Solution croisement(Solution p1, Solution p2, HashMap<Solution, Double> proba){
+
+    public Solution croisementMethod1(Solution p1, Solution p2, HashMap<Solution, Double> proba){
         Solution returner = new Solution();
         ArrayList<Client> compteur = new ArrayList<Client>(clients);
         Random random = new Random();
@@ -378,8 +380,8 @@ public class Application {
         }
         return returner;
     }
-    */
-    public Solution croisement(Solution p1, Solution p2, HashMap<Solution, Double> proba) {
+
+    public Solution croisementMethod2(Solution p1, Solution p2, HashMap<Solution, Double> proba) {
         Solution returner = new Solution();
         ArrayList<Client> clients1 = new ArrayList<>();
         ArrayList<Client> compteur = new ArrayList<Client>(clients);
@@ -410,8 +412,8 @@ public class Application {
         }
 
         for(Client c: compteur){
-            newClients.add(random.nextInt(newClients.size()-1), c);
-            //newClients.add(c);
+            //newClients.add(random.nextInt(newClients.size()-1), c);
+            newClients.add(c);
         }
 
         Iterator<Client> it = newClients.iterator();
@@ -441,24 +443,16 @@ public class Application {
         return returner;
     }
 
-    public Solution mutate(Solution child){
+    public Solution mutate(Solution child, float rate){
         Random random = new Random();
         Solution returner = child;
         if(child.getRoutes().size() < 5)
             System.out.println("BUG child size : " + child.getRoutes().size());
 
         ArrayList<Solution> solutions = generateAllNeighborsByMove(child);
-        if(random.nextFloat() < 0.5){
+        if(random.nextFloat() < rate){
             returner = solutions.get(random.nextInt(solutions.size()-1));
         }
-        /*else{
-            Solution bestSolution = null;
-            for(Solution s: solutions){
-                if(bestSolution == null || bestSolution.getSommeDistance(root, distances) < s.getSommeDistance(root, distances))
-                    bestSolution = s;
-            }
-            returner = bestSolution;
-        }*/
         return returner;
     }
 }

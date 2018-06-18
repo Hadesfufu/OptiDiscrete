@@ -9,10 +9,9 @@ public class Main {
 
         int choice = menu();
 
-        int generationChoice = generationBaseSolutionChoice();
-
         switch (choice) {
             case 1:
+                int generationChoice = generationBaseSolutionChoice();
                 int methodChoice = tabooMethodChoice();
                 boolean move = methodChoice != 2;
                 boolean swap = methodChoice != 1;
@@ -39,13 +38,40 @@ public class Main {
             case 2:
                 int populationSize = geneticPopulationSizeChoice();
                 int tries = geneticTriesChoice();
+                int geneticMethodChoice = geneticMethodChoice();
+                float geneticRate = geneticRateChoice();
 
                 System.out.println("----Lancement de l'algorithme génétique");
-                a.algoGenetique(populationSize, tries);
+                a.algoGenetique(populationSize, tries, geneticMethodChoice, geneticRate);
                 break;
             default:
                 break;
         }
+    }
+
+    private static int geneticRateChoice() {
+        int selection;
+        Scanner input = new Scanner(System.in);
+
+        System.out.println("\nEntrez le taux de mutation (entre 0 et 1) : ");
+
+        selection = input.nextInt();
+        return selection;
+    }
+
+    private static int geneticMethodChoice() {
+        int selection;
+        Scanner input = new Scanner(System.in);
+
+        System.out.println("\nChoix de la méthode de croisement");
+        System.out.println("-------------------------");
+
+        System.out.println("1 - Mix de la séquence génétique");
+        System.out.println("2 - Coupage de la séquence génétique");
+
+
+        selection = input.nextInt();
+        return selection;
     }
 
     private static int geneticPopulationSizeChoice() {
