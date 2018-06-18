@@ -49,13 +49,13 @@ public class Main {
         }
     }
 
-    private static int geneticRateChoice() {
-        int selection;
+    private static float geneticRateChoice() {
+        float selection;
         Scanner input = new Scanner(System.in);
 
         System.out.println("\nEntrez le taux de mutation (entre 0 et 1) : ");
 
-        selection = input.nextInt();
+        selection = input.nextFloat();
         return selection;
     }
 
