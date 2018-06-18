@@ -19,9 +19,9 @@ public class Application {
 
     }
 
-    public void load() {
+    public void load(String data) {
         try {
-            BufferedReader br = new BufferedReader(new FileReader("data/data01.txt"));
+            BufferedReader br = new BufferedReader(new FileReader("data/" + data));
             String line = br.readLine();
             line = br.readLine();
             root = new Client(line);
@@ -72,13 +72,12 @@ public class Application {
             currentRoute.add(root);
         }
         baseSolution = new Solution(routes);
-        System.out.println("Base solution :");
-        baseSolution.display(root, distances);
+        printBaseSolution();
     }
 
     public void generateBaseSolutionRandom() {
         baseSolution = Solution.generateRandom(this);
-        baseSolution.display(root, distances);
+        printBaseSolution();
     }
 
     public void generateBaseSolutionWithMaximalRoads() {
@@ -96,8 +95,12 @@ public class Application {
         }
 
         baseSolution = new Solution(routes);
-        System.out.println("Base solution :");
-        baseSolution.display(root, distances);
+        printBaseSolution();
+    }
+
+    public void printBaseSolution() {
+        System.out.println("\n----Solution de base ");
+        baseSolution.displayWithoutSerialize(root, distances);
     }
 
     public Client getVoisinageLess(Client root, Client origin, ArrayList<Client> ar, Route r) {
@@ -113,15 +116,22 @@ public class Application {
         return good;
     }
 
-    public Double taboo(int nbIteration, int tabooSize) {
+    public Double taboo(int nbIteration, int tabooSize, boolean move, boolean swap) {
         ArrayList<String> taboo = new ArrayList<>();
         Solution globalBestSolution = baseSolution;
         Solution currentBestSolution = baseSolution;
         Solution bestCandidat = baseSolution;
-        Random r = new Random();
+
         int i = 0;
         while (i < nbIteration && bestCandidat != null) {
-            ArrayList<Solution> allNeighbors = generateAllNeighborsByMove(bestCandidat);
+            ArrayList<Solution> allNeighbors = new ArrayList<>();
+            if (move) {
+                allNeighbors.addAll(generateAllNeighborsByMove(bestCandidat));
+            }
+            if (swap) {
+                ArrayList<Solution> swapNeighbors = generateAllNeighborsBySwap(bestCandidat);
+                allNeighbors.addAll(swapNeighbors);
+            }
             bestCandidat = null;
             int stopper = 0;
             Boolean containedInTaboo;
@@ -162,7 +172,8 @@ public class Application {
 
             i++;
         }
-        globalBestSolution.display(root, distances);
+        System.out.println("----Solution finale ");
+        globalBestSolution.displayWithoutSerialize(root, distances);
         return globalBestSolution.getSommeDistance(root, distances);
     }
 
@@ -450,5 +461,4 @@ public class Application {
         }*/
         return returner;
     }
-
 }

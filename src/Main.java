@@ -5,7 +5,7 @@ public class Main {
 
     public static void main(String[] args) {
         Application a = new Application();
-        a.load();
+        a.load(dataChoice());
 
         int choice = menu();
 
@@ -13,9 +13,16 @@ public class Main {
 
         switch (choice) {
             case 1:
+                int methodChoice = tabooMethodChoice();
+                boolean move = methodChoice != 2;
+                boolean swap = methodChoice != 1;
+                int tabooTries = tabooTriesChoice();
+                int tabooSize = tabooSizeChoice();
+
                 switch (generationChoice) {
                     case 1:
                         a.generateBaseSolutionWithMinimalRoads();
+
                         break;
                     case 2:
                         a.generateBaseSolutionWithMaximalRoads();
@@ -24,13 +31,16 @@ public class Main {
                         a.generateBaseSolutionRandom();
                         break;
                 }
-                a.taboo(2000, 30);
+
+                System.out.println("----Lancement de Taboo");
+                System.out.println("    ...");
+                a.taboo(tabooTries, tabooSize, move, swap);
                 break;
             case 2:
                 int populationSize = geneticPopulationSizeChoice();
                 int tries = geneticTriesChoice();
 
-                System.out.println("\n----Lancement de l'algorithme génétique");
+                System.out.println("----Lancement de l'algorithme génétique");
                 a.algoGenetique(populationSize, tries);
                 break;
             default:
@@ -97,14 +107,33 @@ public class Main {
         int selection;
         Scanner input = new Scanner(System.in);
 
-        System.out.println("Choix de la génération de la solution initiale");
-        System.out.println("-------------------------\n");
+        System.out.println("\nChoix de la génération de la solution initiale");
+        System.out.println("-------------------------");
         System.out.println("1 - Solution avec un nombre minimum de routes (optimisée)");
         System.out.println("2 - Solution avec un nombre maximal de routes (non optimisée)");
         System.out.println("3 - Solution aléatoire");
 
         selection = input.nextInt();
         return selection;
+    }
+
+    private static String dataChoice() {
+        int selection;
+        Scanner input = new Scanner(System.in);
+
+        System.out.println("Choix du jeu de données");
+        System.out.println("-------------------------");
+        System.out.println("1 - Jeu de données 1");
+        System.out.println("2 - Jeu de données 2");
+        System.out.println("3 - Jeu de données 3");
+
+        selection = input.nextInt();
+
+        String data = "data01.txt";
+        if(selection == 2) data = "data02.txt";
+        if(selection == 3) data = "data03.txt";
+
+        return data;
     }
 
     public static int menu() {
